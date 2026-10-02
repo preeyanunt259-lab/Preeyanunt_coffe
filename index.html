@@ -416,7 +416,8 @@
         
         if (GAS_API_URL && GAS_API_URL !== "วาง_WEB_APP_URL_จาก_GOOGLE_APPS_SCRIPT_ที่นี่") {
             try {
-                const response = await fetch(GAS_API_URL);
+                const response = await fetch(`${GAS_API_URL}?t=${Date.now()}`, {
+    cache: 'no-store'});
                 const result = await response.json();
                 
                 if (result && result.menuItems) {
