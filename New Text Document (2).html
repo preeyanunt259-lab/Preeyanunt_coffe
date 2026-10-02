@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">CRAFT & CAFE - Order System</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #d35400;
+            --primary-hover: #e67e22;
+            --text-main: #ffffff;
+            --text-muted: #d1d5db;
+            --glass-card: rgba(30, 26, 22, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(15, 12, 10, 0.65), rgba(15, 12, 10, 0.8)), 
+                        url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main);
+        }
+
+        .bg-blur-container {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 6%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.3rem; font-weight: 700; color: var(--primary-hover);
+            display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+        }
+
+        .nav-btns { display: flex; gap: 10px; }
+
+        .btn-nav {
+            padding: 8px 16px; border-radius: 20px; font-size: 0.88rem; font-weight: 500;
+            cursor: pointer; border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1); color: #fff; transition: all 0.3s;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .btn-nav:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+        .btn-cart-nav { background: #27ae60; border-color: #27ae60; }
+
+        .badge { background: #e74c3c; color: #fff; border-radius: 50%; padding: 2px 7px; font-size: 0.75rem; font-weight: bold; }
+
+        main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 30px 20px; }
+        .section-title { text-align: center; margin-bottom: 30px; }
+        .section-title h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .section-title p { color: var(--text-muted); font-weight: 300; }
+
+        .category-title {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary-hover);
+            margin: 10px 0 20px 0; padding-bottom: 8px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .menu-card {
+            background: var(--glass-card); border: 1px solid var(--glass-border);
+            border-radius: 18px; overflow: hidden; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: flex; flex-direction: column;
+        }
+
+        .menu-img { width: 100%; height: 190px; object-fit: cover; background: #221c18; }
+        .menu-body { padding: 20px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+        .menu-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .menu-title { font-size: 1.2rem; font-weight: 600; }
+        .menu-price {
+            font-size: 1.15rem; font-weight: 700; color: var(--primary-hover);
+            background: rgba(211, 84, 0, 0.2); padding: 4px 10px; border-radius: 12px;
+        }
+
+        .option-group { margin-bottom: 12px; }
+        .option-label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+
+        select.form-control, input.form-control, textarea.form-control {
+            width: 100%; padding: 10px; border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid var(--glass-border);
+            color: #fff; outline: none; font-size: 0.9rem;
+        }
+
+        .topping-list {
+            display: flex; flex-direction: column; gap: 6px; background: rgba(0, 0, 0, 0.25);
+            padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);
+            max-height: 120px; overflow-y: auto;
+        }
+
+        .topping-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; cursor: pointer; }
+        .topping-item input { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+
+        .btn-add-cart {
+            width: 100%; padding: 12px; background: var(--primary); color: #fff;
+            border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; margin-top: 10px; transition: background 0.3s;
+        }
+        .btn-add-cart:hover { background: var(--primary-hover); }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 1000;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1c1815; border: 1px solid var(--glass-border); border-radius: 20px;
+            max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 26px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+
+        .cart-item {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .cart-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cart-item-title { font-weight: 600; font-size: 1rem; color: #fff; }
+        .cart-item-sub { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px; }
+        .cart-item-price { font-weight: 700; color: var(--primary-hover); font-size: 1.05rem; white-space: nowrap; }
+
+        .btn-remove-item { background: #c0392b; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; margin-top: 5px; width: 100%;}
+        .cart-summary { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--glass-border); }
+        .cart-total-row { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+
+        /* สไตล์สำหรับส่วนแนบสลิปพร้อมปุ่มลบ */
+        .slip-upload-box {
+            margin-top: 15px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px dashed var(--glass-border);
+            border-radius: 12px;
+            text-align: center;
+        }
+        .slip-preview-container {
+            display: none;
+            position: relative;
+            margin: 12px auto 0;
+            width: fit-content;
+        }
+        .slip-preview-img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            display: block;
+        }
+        .btn-delete-slip {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background-color: rgba(220, 38, 38, 0.85);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+        .btn-delete-slip:hover {
+            background-color: #ef4444;
+            transform: scale(1.1);
+        }
+
+        .admin-section {
+            margin-bottom: 24px; background: rgba(255,255,255,0.03); padding: 16px;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-section h3 { font-size: 1.05rem; margin-bottom: 12px; color: var(--primary-hover); }
+
+        input[type="text"], input[type="number"], input[type="password"], textarea {
+            width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.4);
+            border: 1px solid var(--glass-border); color: #fff; margin-bottom: 10px;
+        }
+
+        .list-manager-item {
+            background: rgba(0, 0, 0, 0.25); padding: 12px; border-radius: 10px;
+            margin-bottom: 10px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .admin-menu-row-header { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .admin-img-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #333; border: 1px solid var(--glass-border); }
+        .btn-danger { background: #c0392b; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+        .btn-add { background: #27ae60; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin-top: 6px; }
+        .btn-save {
+            background: var(--primary); color: #fff; border: none; padding: 12px 24px;
+            border-radius: 10px; width: 100%; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+
+        footer { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    </style>
+</head>
+<body>
+
+<div class="bg-blur-container">
+    <header>
+        <div class="logo" onclick="handleLogoClick()">
+            <span>☕</span> <span id="header-shop-name">CRAFT & CAFE</span>
+        </div>
+        <div class="nav-btns">
+            <button class="btn-nav btn-cart-nav" onclick="openModal('cart-modal')">
+                🛒 ตะกร้า <span class="badge" id="cart-count">0</span>
+            </button>
+            <button class="btn-nav" onclick="openModal('contact-modal')">📞 ติดต่อ</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="section-title">
+            <h1 id="main-shop-title">CRAFT & CAFE</h1>
+            <p>เลือกเครื่องดื่ม ระดับความหวาน Topping และระบุหมายเหตุตามใจคุณ</p>
+        </div>
+        
+        <div id="main-content-container"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 <span id="footer-shop-name">CRAFT & CAFE</span>. All rights reserved.</p>
+    </footer>
+</div>
+
+<!-- Modal 0: ยืนยันรหัสผ่าน Admin -->
+<div class="modal" id="password-modal">
+    <div class="modal-content" style="max-width: 380px; text-align: center;">
+        <div class="modal-header">
+            <h2 style="font-size: 1.2rem;">🔒 ยืนยันตัวตน Admin</h2>
+            <button class="modal-close" onclick="closeModal('password-modal')">&times;</button>
+        </div>
+        <div style="padding: 10px 0;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ Admin</p>
+            <input type="password" id="modal-admin-password" placeholder="กรอกรหัสผ่าน" style="text-align: center; font-size: 1.1rem; letter-spacing: 2px;" onkeypress="handlePasswordKeyPress(event)">
+            <p id="modal-password-error" style="color: #e74c3c; font-size: 0.85rem; display: none; margin-top: 5px;">❌ รหัสผ่านไม่ถูกต้อง</p>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-save" style="margin-top: 0; background: #27ae60;" onclick="checkAdminPasswordModal()">เข้าสู่ระบบ</button>
+                <button class="btn-danger" style="flex: 1;" onclick="closeModal('password-modal')">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 1: ตะกร้าสินค้า -->
+<div class="modal" id="cart-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🛒 รีวิวรายการออเดอร์ของคุณ</h2>
+            <button class="modal-close" onclick="closeModal('cart-modal')">&times;</button>
+        </div>
+
+        <div id="cart-items-container"></div>
+
+        <div class="cart-summary" id="cart-summary-section">
+            <div class="cart-total-row">
+                <span>ราคารวมทั้งหมด:</span>
+                <span id="cart-total-price" style="color:var(--primary-hover);">0 ฿</span>
+            </div>
+
+            <div id="payment-qr-container" style="background: rgba(255, 255, 255, 0.05); padding: 18px; border-radius: 14px; border: 1px solid var(--glass-border); text-align: center; margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #3498db; font-size: 1.05rem;">💳 สแกนชำระเงินผ่าน PromptPay</div>
+                <img id="promptpay-qr-img" src="" alt="PromptPay QR Code" style="width: 210px; height: 210px; border-radius: 12px; background: #fff; padding: 10px; margin: 12px auto; display: block; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                    <div>ชื่อบัญชี: <strong id="display-pp-name" style="color:#fff;">-</strong></div>
+                    <div>พร้อมเพย์: <strong id="display-pp-number" style="color:#f39c12;">-</strong></div>
+                </div>
+
+                <!-- ช่องแนบหลักฐานการโอนเงิน (พร้อมปุ่มลบรูป) -->
+                <div class="slip-upload-box">
+                    <label class="option-label" style="color:#2ecc71; font-size:0.9rem; font-weight:600; margin-bottom:6px;">
+                        📎 แนบหลักฐานการโอนเงิน (สลิป)
+                    </label>
+                    <input type="file" id="slip-file-input" accept="image/*" class="form-control" style="font-size:0.85rem; padding:6px;" onchange="previewSlipImage(this)">
+                    
+                    <div class="slip-preview-container" id="slip-preview-container">
+                        <img id="slip-preview" class="slip-preview-img" alt="ตัวอย่างสลิป">
+                        <button type="button" class="btn-delete-slip" onclick="removeSlipImage()" title="ลบรูปสลิปนี้">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <label class="option-label" style="font-size:0.95rem; font-weight:600; color:#fff;">👤 ชื่อผู้สั่ง / ชื่อสำหรับเรียกรับสินค้า <span style="color:#e74c3c;">*</span></label>
+                <input type="text" id="customer-name" class="form-control" placeholder="ระบุชื่อของคุณที่นี่">
+            </div>
+
+            <button class="btn-save" style="background:#27ae60;" onclick="submitOrder()">✅ ยืนยันการสั่งซื้อ</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: ติดต่อเรา -->
+<div class="modal" id="contact-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📞 ข้อมูลติดต่อร้าน</h2>
+            <button class="modal-close" onclick="closeModal('contact-modal')">&times;</button>
+        </div>
+        <div id="contact-display-info" style="white-space: pre-line; line-height: 1.8; color: var(--text-muted);"></div>
+    </div>
+</div>
+
+<!-- Modal 3: ตั้งค่า Admin -->
+<div class="modal" id="admin-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚙️ แผงควบคุม Admin</h2>
+            <button class="modal-close" onclick="closeModal('admin-modal')">&times;</button>
+        </div>
+
+        <div class="admin-section" style="border: 1px solid var(--primary);">
+            <h3 style="color: var(--primary-hover);">🔐 ความปลอดภัย & การเรียก Admin</h3>
+            <label class="option-label">รหัสผ่าน Admin</label>
+            <input type="password" id="admin-password-input" placeholder="รหัสผ่าน Admin">
+            
+            <label class="option-label" style="margin-top: 10px;">จำนวนครั้งที่ต้องกดโลโก้ร้านเพื่อเข้า Admin</label>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <button type="button" class="btn-nav" style="padding: 8px 16px; font-weight: bold; font-size: 1.1rem;" onclick="adjustAdminClickCount(-1)">-</button>
+                <input type="number" id="admin-clicks-input" readonly style="width: 70px; text-align: center; margin-bottom: 0; font-weight: bold; font-size: 1.1rem;">
+                <button type="button" class="btn-nav" style="padding: 8px 16px; font-weight: bold; font-size: 1.1rem;" onclick="adjustAdminClickCount(1)">+</button>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">(ขั้นต่ำ 1 ครั้ง, สูงสุด 20 ครั้ง)</span>
+            </div>
+        </div>
+
+        <div class="admin-section" style="border: 1px solid #3498db;">
+            <h3 style="color:#3498db;">📡 ตั้งค่า Telegram Bot Notification</h3>
+            <label class="option-label">Telegram Bot Token <span style="color:#e74c3c;">*</span></label>
+            <input type="text" id="admin-telegram-token" placeholder="เช่น 123456789:ABCdefGhIJKlmNoPQ...">
+            <label class="option-label">Telegram Chat ID <span style="color:#e74c3c;">*</span></label>
+            <input type="text" id="admin-telegram-chatid" placeholder="เช่น -1001234567890">
+            <label class="option-label">Google Apps Script Web App URL (ถ้ามี)</label>
+            <input type="text" id="admin-gas-url" placeholder="https://script.google.com/macros/s/.../exec">
+            <label class="option-label">Google Sheet URL (ถ้ามี)</label>
+            <input type="text" id="admin-sheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+
+        <div class="admin-section">
+            <h3>💳 การรับชำระเงิน (PromptPay)</h3>
+            <label class="option-label">หมายเลขพร้อมเพย์</label>
+            <input type="text" id="admin-promptpay-number" placeholder="เช่น 0812345678">
+            <label class="option-label">ชื่อบัญชีผู้รับเงิน</label>
+            <input type="text" id="admin-promptpay-name" placeholder="เช่น บจก. แครฟต์ แอนด์ คาเฟ่">
+        </div>
+
+        <div class="admin-section">
+            <h3>🏠 ข้อมูลร้านค้า & ติดต่อ</h3>
+            <label class="option-label">ชื่อร้านค้า</label>
+            <input type="text" id="admin-shop-name">
+            <label class="option-label">ข้อมูลติดต่อ</label>
+            <textarea id="admin-contact-info" rows="3"></textarea>
+        </div>
+
+        <div class="admin-section">
+            <h3>📂 จัดการหัวข้อหมวดหมู่ (คั่นด้วย ,)</h3>
+            <textarea id="admin-category-list" rows="2" placeholder="Coffee, Tea, Soda"></textarea>
+        </div>
+
+        <div class="admin-section">
+            <h3>🍬 ตัวเลือกระดับความหวาน (คั่นด้วย ,)</h3>
+            <textarea id="admin-sweetness-list" rows="2"></textarea>
+        </div>
+
+        <div class="admin-section">
+            <h3>🍧 จัดการ Topping</h3>
+            <div id="admin-toppings-container"></div>
+            <button class="btn-add" onclick="addAdminToppingRow()">+ เพิ่ม Topping</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>☕ จัดการเมนูเครื่องดื่ม</h3>
+            <div id="admin-menu-container"></div>
+            <button class="btn-add" onclick="addAdminMenuRow()">+ เพิ่มเมนูใหม่</button>
+        </div>
+
+        <button class="btn-save" onclick="saveAdminSettings()">💾 บันทึกการเปลี่ยนแปลงทั้งหมด</button>
+    </div>
+</div>
+
+<script>
+    const defaultImg = "https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop";
+
+    const defaultData = {
+        adminPassword: "3341040",
+        requiredClicks: 7,
+        gasWebAppUrl: "",
+        sheetUrl: "",
+        telegramToken: "",
+        telegramChatId: "",
+        shopName: "CRAFT & CAFE",
+        contactInfo: "📍 ที่อยู่: 123 ถนนกาแฟ สุขุมวิท กรุงเทพฯ\n📞 โทรศัพท์: 081-234-5678\n💬 Line: @craftcafe",
+        promptpayNumber: "0812345678",
+        promptpayName: "ร้าน CRAFT & CAFE",
+        categories: ["1. Coffee", "2. Tea", "3. Soda"],
+        sweetnessLevels: ["0% (ไม่หวาน)", "25% (หวานน้อยมาก)", "50% (หวานน้อย)", "100% (หวานปกติ)"],
+        toppings: [
+            { id: 1, name: "วิปครีม", price: 15 },
+            { id: 2, name: "บุกไข่มุก", price: 10 }
+        ],
+        menuItems: [
+            { id: 1, name: "เอสเปรสโซ่ (Espresso)", price: 50, category: "1. Coffee", image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?q=80&w=600&auto=format&fit=crop" },
+            { id: 2, name: "อเมริกาโน่ (Americano)", price: 55, category: "1. Coffee", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=600&auto=format&fit=crop" },
+            { id: 3, name: "ชาไทย (Thai Tea)", price: 50, category: "2. Tea", image: "https://images.unsplash.com/photo-1557006021-b85faa2bc5e2?q=80&w=600&auto=format&fit=crop" }
+        ]
+    };
+
+    let cart = [];
+    let logoClickCount = 0;
+    let logoClickTimer;
+
+    function getAppData() {
+        const saved = localStorage.getItem('coffee_shop_data_v5');
+        let data = saved ? JSON.parse(saved) : defaultData;
+        if (!data.categories) data.categories = defaultData.categories;
+        if (!data.requiredClicks) data.requiredClicks = defaultData.requiredClicks;
+        return data;
+    }
+
+    function setAppData(data) {
+        localStorage.setItem('coffee_shop_data_v5', JSON.stringify(data));
+    }
+
+    function handleLogoClick() {
+        const data = getAppData();
+        const reqClicks = data.requiredClicks || 7;
+        
+        logoClickCount++;
+        clearTimeout(logoClickTimer);
+        logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 2000);
+
+        if (logoClickCount >= reqClicks) {
+            logoClickCount = 0;
+            openPasswordModal();
+        }
+    }
+
+    function openPasswordModal() {
+        document.getElementById('modal-admin-password').value = '';
+        document.getElementById('modal-password-error').style.display = 'none';
+        openModal('password-modal');
+        setTimeout(() => {
+            document.getElementById('modal-admin-password').focus();
+        }, 100);
+    }
+
+    function handlePasswordKeyPress(e) {
+        if (e.key === 'Enter') {
+            checkAdminPasswordModal();
+        }
+    }
+
+    function checkAdminPasswordModal() {
+        const data = getAppData();
+        const inputPass = document.getElementById('modal-admin-password').value;
+        if (inputPass === (data.adminPassword || "3341040")) {
+            closeModal('password-modal');
+            openModal('admin-modal');
+        } else {
+            document.getElementById('modal-password-error').style.display = 'block';
+        }
+    }
+
+    function renderApp() {
+        const data = getAppData();
+
+        document.getElementById('page-title').innerText = `${data.shopName} - Menu`;
+        document.getElementById('header-shop-name').innerText = data.shopName;
+        document.getElementById('main-shop-title').innerText = data.shopName;
+        document.getElementById('footer-shop-name').innerText = data.shopName;
+        document.getElementById('contact-display-info').innerText = data.contactInfo;
+
+        const mainContainer = document.getElementById('main-content-container');
+        mainContainer.innerHTML = '';
+
+        const categories = data.categories || ["Coffee"];
+
+        categories.forEach(category => {
+            const itemsInCategory = data.menuItems.filter(item => (item.category || categories[0]) === category);
+            
+            if (itemsInCategory.length > 0) {
+                const catHeader = document.createElement('h2');
+                catHeader.className = 'category-title';
+                catHeader.innerText = category;
+                mainContainer.appendChild(catHeader);
+
+                const grid = document.createElement('div');
+                grid.className = 'menu-grid';
+
+                itemsInCategory.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'menu-card';
+                    const sweetnessOptions = data.sweetnessLevels.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('');
+                    const toppingsHTML = data.toppings.map(t => `
+                        <label class="topping-item">
+                            <span>${t.name} (+${t.price}฿)</span>
+                            <input type="checkbox" data-name="${t.name}" data-price="${t.price}" class="topping-check-${item.id}">
+                        </label>
+                    `).join('');
+
+                    const imgUrl = item.image && item.image.trim() !== '' ? item.image : defaultImg;
+
+                    card.innerHTML = `
+                        <img src="${imgUrl}" alt="${item.name}" class="menu-img" onerror="this.src='${defaultImg}'">
+                        <div class="menu-body">
+                            <div>
+                                <div class="menu-header">
+                                    <div class="menu-title">${item.name}</div>
+                                    <div class="menu-price">${item.price} ฿</div>
+                                </div>
+                                <div class="option-group">
+                                    <label class="option-label">ระดับความหวาน</label>
+                                    <select class="form-control" id="sweetness-${item.id}">${sweetnessOptions}</select>
+                                </div>
+                                <div class="option-group">
+                                    <label class="option-label">Topping เพิ่มเติม</label>
+                                    <div class="topping-list">${toppingsHTML || '<span style="font-size:0.8rem; color:#888;">ไม่มี Topping</span>'}</div>
+                                </div>
+                                <div class="option-group">
+                                    <label class="option-label">หมายเหตุ</label>
+                                    <input type="text" class="form-control" id="remark-${item.id}" placeholder="เช่น แยกน้ำแข็ง">
+                                </div>
+                            </div>
+                            <button class="btn-add-cart" onclick="addToCart(${item.id})">🛒 เพิ่มลงตะกร้า</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                mainContainer.appendChild(grid);
+            }
+        });
+
+        updateCartBadge();
+    }
+
+    function addToCart(menuId) {
+        const data = getAppData();
+        const menuItem = data.menuItems.find(m => m.id === menuId);
+        if(!menuItem) return;
+
+        const sweetness = document.getElementById(`sweetness-${menuId}`).value;
+        const remark = document.getElementById(`remark-${menuId}`).value.trim();
+
+        const toppingChecks = document.querySelectorAll(`.topping-check-${menuId}:checked`);
+        let selectedToppings = [];
+        let toppingsPrice = 0;
+
+        toppingChecks.forEach(chk => {
+            const price = parseFloat(chk.dataset.price);
+            selectedToppings.push({ name: chk.dataset.name, price: price });
+            toppingsPrice += price;
+        });
+
+        cart.push({
+            cartItemId: Date.now() + Math.random(),
+            menuName: menuItem.name,
+            sweetness: sweetness,
+            toppings: selectedToppings,
+            remark: remark,
+            totalPrice: menuItem.price + toppingsPrice
+        });
+
+        document.getElementById(`remark-${menuId}`).value = '';
+        toppingChecks.forEach(chk => chk.checked = false);
+        
+        updateCartBadge();
+        alert(`เพิ่ม "${menuItem.name}" ลงในตะกร้าเรียบร้อยแล้ว!`);
+    }
+
+    function updateCartBadge() {
+        document.getElementById('cart-count').innerText = cart.length;
+    }
+
+    function updateCartItemRemark(index, newRemark) {
+        cart[index].remark = newRemark;
+    }
+
+    // ฟังก์ชันแสดงตัวอย่างสลิปเมื่อเลือกรูปภาพ
+    function previewSlipImage(input) {
+        const preview = document.getElementById('slip-preview');
+        const container = document.getElementById('slip-preview-container');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                container.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            removeSlipImage();
+        }
+    }
+
+    // ฟังก์ชันลบรูปสลิป
+    function removeSlipImage() {
+        const input = document.getElementById('slip-file-input');
+        const preview = document.getElementById('slip-preview');
+        const container = document.getElementById('slip-preview-container');
+        if(input) input.value = '';
+        if(preview) preview.src = '';
+        if(container) container.style.display = 'none';
+    }
+
+    function renderCartModal() {
+        const data = getAppData();
+        const cartContainer = document.getElementById('cart-items-container');
+        const summarySection = document.getElementById('cart-summary-section');
+        cartContainer.innerHTML = '';
+
+        if(cart.length === 0) {
+            cartContainer.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">ตะกร้าสินค้าของคุณยังว่างอยู่</div>`;
+            summarySection.style.display = 'none';
+            return;
+        }
+
+        summarySection.style.display = 'block';
+        let grandTotal = 0;
+
+        cart.forEach((item, index) => {
+            grandTotal += item.totalPrice;
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            
+            let toppingsText = item.toppings.map(t => `${t.name} (+${t.price}฿)`).join(', ');
+            
+            div.innerHTML = `
+                <div class="cart-item-header">
+                    <div style="flex: 1; padding-right: 10px;">
+                        <span class="cart-item-title">${index + 1}. ${item.menuName}</span>
+                        <div class="cart-item-sub">
+                            • ความหวาน: ${item.sweetness} 
+                            ${toppingsText ? `<br>• Topping: ${toppingsText}` : ''}
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <input type="text" class="form-control" placeholder="📝 ระบุหมายเหตุ (ถ้ามี)" value="${item.remark || ''}" oninput="updateCartItemRemark(${index}, this.value)" style="padding: 6px 10px; font-size: 0.85rem; background: rgba(0,0,0,0.4); margin-bottom: 0;">
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                        <span class="cart-item-price">${item.totalPrice} ฿</span>
+                        <button class="btn-remove-item" onclick="removeFromCart(${index})">ลบ</button>
+                    </div>
+                </div>
+            `;
+            cartContainer.appendChild(div);
+        });
+
+        document.getElementById('cart-total-price').innerText = `${grandTotal} ฿`;
+
+        if (data.promptpayNumber && grandTotal > 0) {
+            document.getElementById('payment-qr-container').style.display = 'block';
+            document.getElementById('display-pp-name').innerText = data.promptpayName || '-';
+            document.getElementById('display-pp-number').innerText = data.promptpayNumber || '-';
+            const cleanPP = data.promptpayNumber.replace(/[^0-9]/g, '');
+            document.getElementById('promptpay-qr-img').src = `https://promptpay.io/${cleanPP}/${grandTotal}.png`;
+        } else {
+            document.getElementById('payment-qr-container').style.display = 'none';
+        }
+
+        // รีเซ็ตไฟล์สลิปและซ่อนพรีวิวเมื่อเปิด Modal
+        removeSlipImage();
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartBadge();
+        renderCartModal();
+    }
+
+    // ฟังก์ชันส่งออเดอร์พร้อมสลิปตรงไปยัง Telegram Bot API
+    async function submitOrder() {
+        const data = getAppData();
+        const customerName = document.getElementById('customer-name').value.trim();
+        const slipFileInput = document.getElementById('slip-file-input');
+        
+        if (!customerName) {
+            alert('กรุณาระบุชื่อผู้สั่งซื้อก่อนส่งออเดอร์ครับ');
+            document.getElementById('customer-name').focus();
+            return;
+        }
+
+        if (cart.length === 0) return;
+
+        if (!data.telegramToken || !data.telegramChatId) {
+            alert('⚠️ กรุณาตั้งค่า Telegram Bot Token และ Chat ID ในหน้า Admin ก่อนใช้งานระบบส่งออเดอร์ครับ');
+            return;
+        }
+
+        let grandTotal = 0;
+        let itemsCaption = "";
+
+        cart.forEach((item, i) => {
+            grandTotal += item.totalPrice;
+            let toppingsText = item.toppings.length > 0 ? ` (+Topping: ${item.toppings.map(t => t.name).join(', ')})` : '';
+            let remarkText = item.remark ? ` [หมายเหตุ: ${item.remark}]` : '';
+            itemsCaption += `${i + 1}. ${item.menuName} (${item.sweetness})${toppingsText}${remarkText} - ${item.totalPrice}฿\n`;
+        });
+
+        // ข้อความแคปชันสำหรับส่งใน Telegram
+        const telegramCaption = `☕ *ออเดอร์ใหม่เข้าแล้ว! (${data.shopName})*\n` +
+            `👤 *ชื่อลูกค้า:* ${customerName}\n` +
+            `----------------------------------\n` +
+            `📋 *รายการสั่งซื้อ:*\n${itemsCaption}` +
+            `----------------------------------\n` +
+            `💰 *ราคารวมทั้งหมด:* ${grandTotal} บาท\n` +
+            `⏰ *เวลาสั่งซื้อ:* ${new Date().toLocaleString('th-TH')}`;
+
+        const submitBtn = document.querySelector('#cart-summary-section .btn-save');
+        const originalBtnText = submitBtn.innerText;
+
+        try {
+            submitBtn.innerText = '⏳ กำลังส่งออเดอร์เข้า Telegram...';
+            submitBtn.disabled = true;
+
+            const slipFile = slipFileInput ? slipFileInput.files[0] : null;
+
+            if (slipFile) {
+                // ส่งภาพสลิป + แคปชันข้อความ ผ่าน endpoint sendPhoto
+                const formData = new FormData();
+                formData.append('chat_id', data.telegramChatId);
+                formData.append('photo', slipFile);
+                formData.append('caption', telegramCaption);
+                formData.append('parse_mode', 'Markdown');
+
+                const response = await fetch(`https://api.telegram.org/bot${data.telegramToken}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const resData = await response.json();
+                if (!resData.ok) {
+                    throw new Error(resData.description || 'เกิดข้อผิดพลาดจาก Telegram API');
+                }
+            } else {
+                // หากไม่ได้แนบสลิป ส่งข้อความอย่างเดียว ผ่าน endpoint sendMessage
+                const response = await fetch(`https://api.telegram.org/bot${data.telegramToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: data.telegramChatId,
+                        text: telegramCaption,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                const resData = await response.json();
+                if (!resData.ok) {
+                    throw new Error(resData.description || 'เกิดข้อผิดพลาดจาก Telegram API');
+                }
+            }
+
+            // หากมีตั้งค่า Google Apps Script Web App ให้ส่งข้อมูลไปลง Sheet แบบ background (ถ้ามี)
+            if (data.gasWebAppUrl && data.gasWebAppUrl.trim() !== '') {
+                fetch(data.gasWebAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerName: customerName,
+                        orderDetails: itemsCaption,
+                        totalPrice: grandTotal,
+                        sheetUrl: data.sheetUrl || ""
+                    })
+                }).catch(e => console.log('GAS sync silent error:', e));
+            }
+
+            alert(`🎉 สั่งซื้อสำเร็จ!\nขอบคุณคุณ ${customerName} ออเดอร์และหลักฐานการโอนเงินถูกส่งเรียบร้อยแล้วครับ`);
+
+            cart = [];
+            document.getElementById('customer-name').value = '';
+            updateCartBadge();
+            closeModal('cart-modal');
+        } catch (err) {
+            console.error("Submit Error:", err);
+            alert('❌ เกิดข้อผิดพลาดในการส่งออเดอร์: ' + err.message);
+        } finally {
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    function openModal(id) {
+        if(id === 'admin-modal') loadAdminForm();
+        if(id === 'cart-modal') renderCartModal();
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function getCurrentAdminCategories() {
+        const raw = document.getElementById('admin-category-list');
+        if (raw) {
+            return raw.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+        return getAppData().categories || ["Coffee"];
+    }
+
+    function adjustAdminClickCount(delta) {
+        const input = document.getElementById('admin-clicks-input');
+        let val = (parseInt(input.value) || 7) + delta;
+        if (val < 1) val = 1;
+        if (val > 20) val = 20;
+        input.value = val;
+    }
+
+    function loadAdminForm() {
+        const data = getAppData();
+        document.getElementById('admin-password-input').value = data.adminPassword || "3341040";
+        document.getElementById('admin-clicks-input').value = data.requiredClicks || 7;
+        document.getElementById('admin-gas-url').value = data.gasWebAppUrl || "";
+        document.getElementById('admin-sheet-url').value = data.sheetUrl || "";
+        document.getElementById('admin-telegram-token').value = data.telegramToken || "";
+        document.getElementById('admin-telegram-chatid').value = data.telegramChatId || "";
+        document.getElementById('admin-promptpay-number').value = data.promptpayNumber || "";
+        document.getElementById('admin-promptpay-name').value = data.promptpayName || "";
+        document.getElementById('admin-shop-name').value = data.shopName;
+        document.getElementById('admin-contact-info').value = data.contactInfo;
+        
+        document.getElementById('admin-category-list').value = (data.categories || ["Coffee", "Tea"]).join(', ');
+        document.getElementById('admin-sweetness-list').value = data.sweetnessLevels.join(', ');
+
+        const topContainer = document.getElementById('admin-toppings-container');
+        topContainer.innerHTML = '';
+        data.toppings.forEach(t => addAdminToppingRow(t.name, t.price));
+
+        const menuContainer = document.getElementById('admin-menu-container');
+        menuContainer.innerHTML = '';
+        data.menuItems.forEach(m => addAdminMenuRow(m.name, m.price, m.image, m.category));
+    }
+
+    function addAdminToppingRow(name = '', price = '') {
+        const container = document.getElementById('admin-toppings-container');
+        const div = document.createElement('div');
+        div.className = 'list-manager-item';
+        div.innerHTML = `
+            <div style="display:flex; gap:8px;">
+                <input type="text" placeholder="ชื่อ Topping" value="${name}" class="top-name" style="flex:2;">
+                <input type="number" placeholder="ราคา" value="${price}" class="top-price" style="flex:1;">
+                <button class="btn-danger" onclick="this.parentElement.parentElement.remove()">ลบ</button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    function addAdminMenuRow(name = '', price = '', image = '', category = '') {
+        const container = document.getElementById('admin-menu-container');
+        const div = document.createElement('div');
+        div.className = 'list-manager-item';
+        const imgSrc = image && image.trim() !== '' ? image : defaultImg;
+
+        const cats = getCurrentAdminCategories();
+        const catOptions = cats.map(c => `<option value="${c}" ${c === category ? 'selected' : ''}>${c}</option>`).join('');
+
+        div.innerHTML = `
+            <div class="admin-menu-row-header">
+                <img src="${imgSrc}" class="admin-img-preview">
+                <input type="text" placeholder="ชื่อเมนู" value="${name}" class="menu-name" style="flex: 2; min-width: 120px;">
+                <input type="number" placeholder="ราคา" value="${price}" class="menu-price-input" style="flex: 1; min-width: 60px;">
+                <button class="btn-danger" onclick="this.parentElement.parentElement.remove()">ลบ</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <select class="menu-category form-control" style="flex:1; margin-bottom:0; padding:8px;">
+                    ${catOptions}
+                </select>
+                <div style="flex:2;">
+                    <input type="file" accept="image/*" onchange="handleImageUpload(this)" style="font-size: 0.8rem; padding: 4px;">
+                    <input type="hidden" class="menu-img-data" value="${image || ''}">
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    function handleImageUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const base64Img = e.target.result;
+            const parent = input.closest('.list-manager-item');
+            parent.querySelector('.admin-img-preview').src = base64Img;
+            parent.querySelector('.menu-img-data').value = base64Img;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveAdminSettings() {
+        const newPassword = document.getElementById('admin-password-input').value.trim() || "3341040";
+        const newClicks = parseInt(document.getElementById('admin-clicks-input').value) || 7;
+        const newGasUrl = document.getElementById('admin-gas-url').value.trim();
+        const newSheetUrl = document.getElementById('admin-sheet-url').value.trim();
+        const newTgToken = document.getElementById('admin-telegram-token').value.trim();
+        const newTgChatId = document.getElementById('admin-telegram-chatid').value.trim();
+        const newPromptpayNumber = document.getElementById('admin-promptpay-number').value.trim();
+        const newPromptpayName = document.getElementById('admin-promptpay-name').value.trim();
+        const newShopName = document.getElementById('admin-shop-name').value.trim() || 'CRAFT & CAFE';
+        const newContactInfo = document.getElementById('admin-contact-info').value;
+        
+        const newCategoryRaw = document.getElementById('admin-category-list').value;
+        const newCategories = newCategoryRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+        const newSweetnessRaw = document.getElementById('admin-sweetness-list').value;
+        const newSweetness = newSweetnessRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+        const topRows = document.querySelectorAll('#admin-toppings-container .list-manager-item');
+        const newToppings = [];
+        topRows.forEach((row, i) => {
+            const name = row.querySelector('.top-name').value.trim();
+            const price = parseFloat(row.querySelector('.top-price').value) || 0;
+            if(name) newToppings.push({ id: i + 1, name, price });
+        });
+
+        const menuRows = document.querySelectorAll('#admin-menu-container .list-manager-item');
+        const newMenuItems = [];
+        menuRows.forEach((row, i) => {
+            const name = row.querySelector('.menu-name').value.trim();
+            const price = parseFloat(row.querySelector('.menu-price-input').value) || 0;
+            const category = row.querySelector('.menu-category').value;
+            const image = row.querySelector('.menu-img-data').value;
+            if(name) newMenuItems.push({ id: i + 1, name, price, image, category });
+        });
+
+        const newData = {
+            adminPassword: newPassword,
+            requiredClicks: newClicks,
+            gasWebAppUrl: newGasUrl,
+            sheetUrl: newSheetUrl,
+            telegramToken: newTgToken,
+            telegramChatId: newTgChatId,
+            promptpayNumber: newPromptpayNumber,
+            promptpayName: newPromptpayName,
+            shopName: newShopName,
+            contactInfo: newContactInfo,
+            categories: newCategories.length > 0 ? newCategories : ["Coffee"],
+            sweetnessLevels: newSweetness.length > 0 ? newSweetness : defaultData.sweetnessLevels,
+            toppings: newToppings,
+            menuItems: newMenuItems
+        };
+
+        setAppData(newData);
+        renderApp();
+        closeModal('admin-modal');
+        alert('💾 บันทึกการตั้งค่าทั้งหมดเรียบร้อยแล้ว!');
+    }
+
+    renderApp();
+</script>
+
+</body>
+</html>
